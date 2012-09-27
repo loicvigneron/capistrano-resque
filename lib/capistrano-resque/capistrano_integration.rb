@@ -41,7 +41,7 @@ module CapistranoResque
                 puts "Starting #{number_of_workers} worker(s) with QUEUE: #{queue}"
                 number_of_workers.times do
                   pid = "./tmp/pids/resque_work_#{worker_id}.pid"
-                  command = "cd #{current_path}; nohup #{fetch(:bundle_cmd, "bundle")} exec rake environment resque:work RAILS_ENV=#{rails_env} QUEUE=#{queue} PIDFILE=#{pid} >> #{shared_path}/log/resque_workers.log 2>&1 &"
+                  command = "cd #{current_path}; nohup #{fetch(:bundle_cmd, "bundle")} exec rake environment resque:work RAILS_ENV=#{rails_env} QUEUE=#{queue} PIDFILE=#{pid} > /dev/null 2>&1 &"
                   run(command, :pty => false, :roles => role)
                   worker_id += 1
                 end
@@ -72,8 +72,10 @@ module CapistranoResque
           namespace :scheduler do
             desc "Starts resque scheduler with default configs"
             task :start, :roles => :resque_scheduler do
-              run "cd #{current_path} && RAILS_ENV=#{rails_env} \
-PIDFILE=./tmp/pids/scheduler.pid bundle exec rake resque:scheduler >> #{shared_path}/log/resque_scheduler.log 2>&1 &"
+              command = "cd #{current_path}; nohup bundle exec rake resque:scheduler RAILS_ENV=#{rails_env} " +
+                 "PIDFILE=#{shared_path}/tmp/pids/scheduler.pid > " +
+                 "/dev/null 2>&1 &"
+              run(command, :pty => false)
             end
 
             desc "Stops resque scheduler"
