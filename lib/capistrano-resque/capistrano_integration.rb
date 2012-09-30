@@ -27,8 +27,8 @@ module CapistranoResque
         namespace :resque do
           desc "See current worker status"
           task :status, :roles => lambda { workers_roles() }, :on_no_matching_servers => :continue do
-            command = "if [ -e #{current_path}/tmp/pids/resque_work_1.pid ]; then \
-                for f in $(ls #{current_path}/tmp/pids/resque_work*.pid); do ps -p $(cat $f) | sed -n 2p ;done \
+            command = "if [ -e ./tmp/pids/resque_work_1.pid ]; then \
+                for f in $(ls ./tmp/pids/resque_work*.pid); do ps -p $(cat $f) | sed -n 2p ;done \
                ;fi"
             run(command)
           end
@@ -57,8 +57,8 @@ module CapistranoResque
           # CONT - Start to process new jobs again after a USR2 (resume)
           desc "Quit running Resque workers"
           task :stop, :roles => lambda { workers_roles() }, :on_no_matching_servers => :continue do
-            command = "if [ -e #{current_path}/tmp/pids/resque_work_1.pid ]; then \
-              for f in `ls #{current_path}/tmp/pids/resque_work*.pid`; do #{try_sudo} kill -s #{resque_kill_signal} `cat $f` ; rm $f ;done \
+            command = "if [ -e ./tmp/pids/resque_work_1.pid ]; then \
+              for f in `ls ./tmp/pids/resque_work*.pid`; do #{try_sudo} kill -s #{resque_kill_signal} `cat $f` ; rm $f ;done \
               ;fi"
             run(command)
           end
@@ -73,14 +73,14 @@ module CapistranoResque
             desc "Starts resque scheduler with default configs"
             task :start, :roles => :resque_scheduler do
               command = "cd #{current_path}; nohup bundle exec rake resque:scheduler RAILS_ENV=#{rails_env} " +
-                 "PIDFILE=#{shared_path}/tmp/pids/scheduler.pid > " +
+                 "PIDFILE=./tmp/pids/scheduler.pid > " +
                  "/dev/null 2>&1 &"
               run(command, :pty => false)
             end
 
             desc "Stops resque scheduler"
             task :stop, :roles => :resque_scheduler do
-              pid = "#{current_path}/tmp/pids/scheduler.pid"
+              pid = "./tmp/pids/scheduler.pid"
               command = "if [ -e #{pid} ]; then \
                 #{try_sudo} kill $(cat #{pid}) ; rm #{pid} \
                 ;fi"
