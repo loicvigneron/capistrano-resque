@@ -27,7 +27,7 @@ module CapistranoResque
         namespace :resque do
           desc "See current worker status"
           task :status, :roles => lambda { workers_roles() }, :on_no_matching_servers => :continue do
-            command = "if [ -e ./tmp/pids/resque_work_1.pid ]; then \
+            command = "cd #{current_path}; if [ -e ./tmp/pids/resque_work_1.pid ]; then \
                 for f in $(ls ./tmp/pids/resque_work*.pid); do ps -p $(cat $f) | sed -n 2p ;done \
                ;fi"
             run(command)
@@ -57,7 +57,7 @@ module CapistranoResque
           # CONT - Start to process new jobs again after a USR2 (resume)
           desc "Quit running Resque workers"
           task :stop, :roles => lambda { workers_roles() }, :on_no_matching_servers => :continue do
-            command = "if [ -e ./tmp/pids/resque_work_1.pid ]; then \
+            command = "cd #{current_path}; if [ -e ./tmp/pids/resque_work_1.pid ]; then \
               for f in `ls ./tmp/pids/resque_work*.pid`; do #{try_sudo} kill -s #{resque_kill_signal} `cat $f` ; rm $f ;done \
               ;fi"
             run(command)
